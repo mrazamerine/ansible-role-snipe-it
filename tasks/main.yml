@@ -1,0 +1,116 @@
+# Snipe-IT tasks - main.yml
+---
+- name: create snipe-it user
+  user:
+    name: snipe-it
+    comment: "Snipe-IT User"
+    group: www-data
+    shell: /bin/bash
+    system: yes
+
+- name: include facts tasks
+  include: facts.yml
+
+- name: ufw - allow http/https connections
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+  with_items:
+    - http
+    - https
+
+- name: install required packages - snipe-it
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items: 
+    - php7.0-cli
+    - php7.0-curl
+    - php7.0-fpm
+    - php7.0-ldap
+    - php7.0-mysql
+    - php7.0-mcrypt
+    - php7.0-gd
+    - php7.0-xml
+    - php7.0-mbstring
+    - php7.0-zip
+    - patch
+
+- name: create snipe-it mysql database
+  mysql_db:
+    db: snipeit
+    state: present
+    encoding: utf8
+    collation: utf8_bin
+
+- name: create snipe-it mysql user
+  mysql_user:
+    name: mysql_snipeit_user
+    password: "{{ snipeit_db_password }}"
+    priv: 'snipeit.*:ALL,GRANT'
+    state: present
+
+- name: clone snipe-it github repo
+  git:
+    repo: 'https://github.com/snipe/snipe-it'
+    dest: /srv/snipe-it
+    clone: yes
+    update: yes
+  notify:
+    - restart nginx
+    - restart php7
+  register: clone_snipeit_repo
+
+- name: configure snipe-it git repo
+  git_config:
+    name: core.fileMode
+    repo: /srv/snipe-it
+    scope: local
+    value: false
+
+- name: include nginx tasks
+  include: nginx.yml
+
+- name: apply snipe-it .env template
+  template:
+    src: env.j2
+    dest: /srv/snipe-it/.env
+  when: clone_snipeit_repo|changed
+  register: snipeit_env_template
+  notify:
+    - restart nginx
+    - restart php7
+
+- name: set ownership and persmisons of snipe-it directory
+  file:
+    path: /srv/snipe-it
+    state: directory
+    owner: snipe-it
+    group: www-data
+    mode: 0775
+    recurse: yes
+  when: clone_snipeit_repo|changed
+
+- name: install composer
+  shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  args:
+    creates: /usr/local/bin/composer
+
+- name: install dependencies with composer
+  composer:
+    command: install
+    working_dir: /srv/snipe-it
+    no_dev: yes
+    prefer_source: yes
+  become_user: snipe-it
+
+- name: set app key
+  shell: php /srv/snipe-it/artisan key:generate
+  when: clone_snipeit_repo|changed or snipeit_env_template|changed
+  register: set_app_key
+
+- name: store app key
+  template:
+    src: app_key.j2
+    dest: /root/.snipeit_app_key
+  when: set_app_key|changed
