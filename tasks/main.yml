@@ -68,9 +68,6 @@
     scope: local
     value: false
 
-- name: include nginx tasks
-  include: nginx.yml
-
 - name: set ownership and persmisons of snipe-it directory
   file:
     path: /srv/snipe-it
@@ -81,6 +78,9 @@
     recurse: yes
   when: clone_snipeit_repo|changed
 
+- name: include nginx tasks
+  include: nginx.yml
+
 - name: apply snipe-it .env template
   template:
     src: env.j2
@@ -88,8 +88,6 @@
     owner: snipe-it
     group: www-data
     mode: 0770
-  when: clone_snipeit_repo|changed
-  register: snipeit_env_template
   notify:
     - restart nginx
     - restart php7
@@ -109,11 +107,14 @@
 
 - name: set app key
   shell: php /srv/snipe-it/artisan key:generate
-  when: clone_snipeit_repo|changed or snipeit_env_template|changed
+  when: clone_snipeit_repo|changed
   register: set_app_key
 
 - name: store app key
   template:
     src: app_key.j2
     dest: /root/.snipeit_app_key
+    owner: root
+    group: root
+    mode: 0600
   when: set_app_key|changed
