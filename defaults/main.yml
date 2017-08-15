@@ -1,9 +1,11 @@
 ---
 snipeit_app_timezone:	America/Los_Angeles
 
-snipeit_app_url: null
-
 snipeit_debug_mode: false
+
+snipeit_mail_encryption: tls
+
+snipeit_mail_from_address:
 
 snipeit_mail_host:
 
@@ -11,8 +13,6 @@ snipeit_mail_username:
 
 snipeit_mail_password:
 
-snipeit_db_password:
+snipeit_mail_port: 25
 
-snipeit_domain_name:
-
-snipeit_app_key:
+snipeit_mail_replyto_address:
