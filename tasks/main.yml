@@ -71,25 +71,28 @@
 - name: include nginx tasks
   include: nginx.yml
 
-- name: apply snipe-it .env template
-  template:
-    src: env.j2
-    dest: /srv/snipe-it/.env
-  when: clone_snipeit_repo|changed
-  register: snipeit_env_template
-  notify:
-    - restart nginx
-    - restart php7
-
 - name: set ownership and persmisons of snipe-it directory
   file:
     path: /srv/snipe-it
     state: directory
     owner: snipe-it
     group: www-data
-    mode: 0775
+    mode: 0770
     recurse: yes
   when: clone_snipeit_repo|changed
+
+- name: apply snipe-it .env template
+  template:
+    src: env.j2
+    dest: /srv/snipe-it/.env
+    owner: snipe-it
+    group: www-data
+    mode: 0770
+  when: clone_snipeit_repo|changed
+  register: snipeit_env_template
+  notify:
+    - restart nginx
+    - restart php7
 
 - name: install composer
   shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
