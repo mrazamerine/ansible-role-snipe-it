@@ -46,7 +46,7 @@
 - name: create snipe-it mysql user
   mysql_user:
     name: mysql_snipeit_user
-    password: "{{ snipeit_db_password }}"
+    password: "{{ mysql_snipeit_password }}"
     priv: 'snipeit.*:ALL,GRANT'
     state: present
 
