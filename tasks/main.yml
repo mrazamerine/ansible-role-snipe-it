@@ -11,14 +11,6 @@
 - name: include facts tasks
   include: facts.yml
 
-- name: ufw - allow http/https connections
-  ufw:
-    rule: allow
-    port: "{{ item }}"
-  with_items:
-    - http
-    - https
-
 - name: install required packages - snipe-it
   apt:
     name: "{{ item }}"
