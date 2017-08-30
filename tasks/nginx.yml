@@ -2,7 +2,7 @@
 ---
 - name: apply nginx sites-available template
   template:
-    src: "{{ ansible_local.snipeit.ssl.sites_available }}sites-available.snipeit.j2"
+    src: "{{ ansible_local.snipeit.security.ssl }}.sites-available.snipeit.j2"
     dest: /etc/nginx/sites-available/snipe-it
     owner: root
     group: root
