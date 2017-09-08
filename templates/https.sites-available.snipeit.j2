@@ -19,7 +19,7 @@ server {
         server_name {{ snipeit_domain_name }};
 
         include snippets/ssl-{{ snipeit_domain_name }}.conf;
-        include /etc/nginx/snippets/ssl-params.conf;
+        include /etc/nginx/snippets/ssl-nginx-params.conf;
 
         root /srv/snipe-it/public/;
         index index.php index.html index.htm;
