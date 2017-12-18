@@ -1,0 +1,7 @@
+#.gitignore file for ansible-role-snipe-it
+
+#Ansible retry files
+*.retry
+
+#.DS_Store files
+.DS_Store
