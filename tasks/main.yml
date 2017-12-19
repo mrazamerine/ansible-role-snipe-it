@@ -15,7 +15,8 @@
   apt:
     name: "{{ item }}"
     state: latest
-  with_items: 
+  with_items:
+    - php7.0-bcmath
     - php7.0-cli
     - php7.0-curl
     - php7.0-fpm
@@ -73,17 +74,6 @@
 - name: include nginx tasks
   include: nginx.yml
 
-- name: apply snipe-it .env template
-  template:
-    src: env.j2
-    dest: /srv/snipe-it/.env
-    owner: snipe-it
-    group: www-data
-    mode: 0770
-  notify:
-    - restart nginx
-    - restart php7
-
 - name: install composer
   shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
   args:
@@ -97,16 +87,21 @@
     prefer_source: yes
   become_user: snipe-it
 
-- name: set app key
-  shell: php /srv/snipe-it/artisan key:generate
-  when: clone_snipeit_repo|changed
-  register: set_app_key
-
-- name: store app key
+- name: apply snipe-it .env template
   template:
-    src: app_key.j2
-    dest: /root/.snipeit_app_key
-    owner: root
-    group: root
-    mode: 0600
-  when: set_app_key|changed
+    src: env.j2
+    dest: /srv/snipe-it/.env
+    owner: snipe-it
+    group: www-data
+    mode: 0770
+  notify:
+    - restart nginx
+    - restart php7
+
+- name: ensure web services are running
+  service:
+    name: "{{ item }}"
+    state: started
+  with_items:
+    - nginx
+    - php7.0-fpm
