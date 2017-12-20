@@ -1,5 +1,5 @@
 # Ansible role – Snipe-IT
-Ansible role for setting up and configuring [Snipe-IT](https//snipeitapp.com/).
+Ansible role for setting up and configuring [Snipe-IT](https://snipeitapp.com/).
 
 
 ## Variables
