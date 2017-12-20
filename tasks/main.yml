@@ -8,9 +8,6 @@
     shell: /bin/bash
     system: yes
 
-- name: include facts tasks
-  include: facts.yml
-
 - name: install required packages - snipe-it
   apt:
     name: "{{ item }}"
