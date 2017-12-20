@@ -4,6 +4,8 @@ Ansible role for setting up and configuring [Snipe-IT](https//snipeitapp.com/).
 
 ## Variables
 
+* **snipeit\_app\_key** – Base64 app key to encrypt session data (base64 string)
+
 * **snipeit\_app\_timezone** – Time zone (string) [America/Los_Angeles]
 
 * **snipeit\_debug\_mode** – Set debug mode (boolean) [false]
