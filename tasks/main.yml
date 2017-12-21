@@ -68,6 +68,10 @@
     recurse: yes
   when: clone_snipeit_repo|changed
 
+- name: run php upgrade
+  command: php /srv/snipe-it/upgrade.php
+  when: clone_snipeit_repo|changed
+
 - name: include nginx tasks
   include: nginx.yml
 
