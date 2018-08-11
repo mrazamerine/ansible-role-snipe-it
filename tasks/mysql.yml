@@ -1,0 +1,15 @@
+# Snipe-IT tasks - mysql.yml
+---
+- name: create snipe-it mysql database
+  mysql_db:
+    db: snipeit
+    state: present
+    encoding: utf8
+    collation: utf8_bin
+
+- name: create snipe-it mysql user
+  mysql_user:
+    name: mysql_snipeit_user
+    password: "{{ mysql_snipeit_password }}"
+    priv: 'snipeit.*:ALL,GRANT'
+    state: present
