@@ -28,6 +28,11 @@
     - patch
     - unzip
 
+- name: install composer
+  shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  args:
+    creates: /usr/local/bin/composer
+
 - name: create snipe-it mysql database
   mysql_db:
     db: snipeit
@@ -42,12 +47,23 @@
     priv: 'snipeit.*:ALL,GRANT'
     state: present
 
+- name: create snipe-it directory
+  file:
+    path: /srv/snipe-it
+    state: directory
+    owner: snipe-it
+    group: www-data
+    mode: 0750
+
 - name: clone snipe-it github repo
   git:
     repo: 'https://github.com/snipe/snipe-it'
     dest: /srv/snipe-it
     clone: yes
     update: yes
+    force: yes
+    version: "{{ snipeit_version }}"
+  become_user: snipe-it
   notify:
     - restart nginx
     - restart php7
@@ -59,28 +75,23 @@
     repo: /srv/snipe-it
     scope: local
     value: false
+  become_user: snipe-it
 
-- name: set ownership and persmisons of snipe-it directory
+- name: set ownership and persmisons of snipe-it sub-directories
   file:
-    path: /srv/snipe-it
+    path: "/srv/snipe-it/{{ item }}"
     state: directory
-    owner: snipe-it
-    group: www-data
     mode: 0770
     recurse: yes
-  when: clone_snipeit_repo|changed
+  with_items:
+    - bootstrap
+    - public
+    - storage
 
 - name: run php upgrade
   command: php /srv/snipe-it/upgrade.php
-  when: clone_snipeit_repo|changed
-
-- name: include nginx tasks
-  include: nginx.yml
-
-- name: install composer
-  shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-  args:
-    creates: /usr/local/bin/composer
+  become_user: snipe-it
+  when: clone_snipeit_repo is changed
 
 - name: install dependencies with composer
   composer:
@@ -96,10 +107,13 @@
     dest: /srv/snipe-it/.env
     owner: snipe-it
     group: www-data
-    mode: 0770
+    mode: 0640
   notify:
     - restart nginx
     - restart php7
+
+- name: include nginx tasks
+  include_tasks: nginx.yml
 
 - name: ensure web services are running
   service:

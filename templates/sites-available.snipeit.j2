@@ -18,7 +18,7 @@ server {
         
         server_name {{ snipeit_domain_name }};
 
-        include snippets/ssl-{{ snipeit_domain_name }}.conf;
+        include snippets/ssl-snipe-it.conf;
         include /etc/nginx/snippets/ssl-nginx-params.conf;
 
         root /srv/snipe-it/public/;

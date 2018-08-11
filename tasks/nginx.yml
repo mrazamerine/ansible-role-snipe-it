@@ -1,5 +1,13 @@
 # Snipe-IT tasks - nginx.yml
 ---
+- name: create snipe-it ssl config file
+  template:
+    src: ssl.conf.j2
+    dest: /etc/nginx/snippets/ssl-snipe-it.conf
+    owner: root
+    group: root
+    mode: 0644
+
 - name: apply nginx sites-available template
   template:
     src: sites-available.snipeit.j2
